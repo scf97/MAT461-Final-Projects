@@ -1,0 +1,172 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+   ],
+   "source": [
+    "from sage.graphs.graph_coloring import edge_coloring\n",
+    "import csv\n",
+    "\n",
+    "'''\n",
+    "Creates a schedule for the specified games present in the .edge file\n",
+    "\n",
+    "Parameters:\n",
+    "\n",
+    "game_edge_filename: str filename for the .edge file where each u and v represent Team A and B respectively\n",
+    "print_schedule: (Optional) bool whether the schedule should be printed by each round, default: False\n",
+    "create_csv: (Optional) bool whether the schedule should be written to a csv file, default: False\n",
+    "\n",
+    "Returns:\n",
+    "\n",
+    "List where each element is a list of games for each week on the schedule\n",
+    "'''\n",
+    "def create_schedule_from_edge_file(game_edge_filename:str, print_schedule:bool=False, create_csv:bool=False) -> list:\n",
+    "\n",
+    "    # Opens file and creates a list of edges for the graph\n",
+    "    edge_list = []\n",
+    "\n",
+    "    with open(game_edge_filename, 'r') as file:\n",
+    "        for line in file:\n",
+    "            line_list = line.replace('\\n','').split(\" \")\n",
+    "            edge = ( int(line_list[0]), int(line_list[1]) )\n",
+    "            edge_list.append(edge)\n",
+    "\n",
+    "    # Creates a graph with each team as a vertex and each game as an edge incident to the 2 teams\n",
+    "    G = Graph(edge_list)\n",
+    "\n",
+    "    # Creates a schedule by finding a minimal coloring of the graph where each color is a week for games to be played\n",
+    "    schedule = edge_coloring(G)\n",
+    "\n",
+    "    # Prints the schedule by each week if specified\n",
+    "    if print_schedule:\n",
+    "        for i in range(len(schedule)):\n",
+    "            print(f\"\\nWeek {i+1}\")\n",
+    "            for teams in schedule[i]:\n",
+    "                print(f\"Team {teams[0]} vs. Team {teams[1]}; \", end='')\n",
+    "\n",
+    "    # Creates schedule.csv with each game as a row with the week number, Team A, and Team B for each game\n",
+    "    if create_csv:\n",
+    "        header_row = ['Week', 'Team A', 'Team B']\n",
+    "        rows = []\n",
+    "        for i in range(len(schedule)):\n",
+    "            for game in schedule[i]:\n",
+    "                rows.append([str(i+1), game[0], game[1]])\n",
+    "        filename = 'schedule.csv'\n",
+    "        with open(filename, 'w') as file:\n",
+    "            csvwriter = csv.writer(file)\n",
+    "            csvwriter.writerow(header_row)\n",
+    "            csvwriter.writerows(rows)\n",
+    "\n",
+    "    # Returns the schedule in list form\n",
+    "    return schedule"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[[(16, 17), (9, 23), (33, 105), (34, 35), (41, 67), (65, 113), (50, 90), (25, 37), (27, 62), (45, 89), (56, 57), (19, 101), (63, 109), (2, 13), (3, 74), (6, 60), (14, 54), (15, 114), (47, 61), (52, 72), (100, 102), (39, 106), (5, 107), (11, 28), (26, 42), (81, 82), (24, 84), (22, 108), (10, 98), (7, 21), (31, 32), (80, 85), (8, 77), (78, 111), (51, 68), (18, 71), (20, 36), (38, 43), (88, 110), (44, 86), (70, 76), (66, 75), (46, 49), (0, 104), (1, 103), (30, 55), (58, 59), (69, 83), (53, 73), (87, 95), (91, 92), (96, 112)], [(16, 23), (33, 45), (35, 92), (8, 41), (65, 70), (69, 90), (72, 104), (25, 106), (36, 37), (48, 57), (88, 89), (30, 101), (105, 109), (2, 64), (3, 40), (6, 7), (14, 43), (15, 60), (22, 47), (74, 84), (5, 52), (11, 50), (12, 26), (10, 81), (28, 38), (68, 108), (63, 97), (98, 107), (32, 39), (29, 82), (51, 111), (24, 110), (17, 95), (18, 61), (34, 71), (54, 99), (49, 67), (20, 96), (62, 76), (19, 44), (31, 79), (75, 112), (46, 53), (66, 91), (80, 86), (59, 113), (0, 93), (1, 27), (4, 9), (55, 94), (73, 114), (77, 78), (56, 87)], [(16, 93), (4, 23), (33, 89), (9, 41), (65, 96), (67, 104), (25, 53), (17, 27), (45, 105), (79, 101), (103, 109), (2, 72), (3, 102), (6, 32), (13, 64), (15, 47), (60, 106), (5, 74), (39, 100), (10, 11), (40, 51), (84, 107), (28, 113), (78, 108), (97, 98), (7, 82), (85, 99), (21, 22), (50, 68), (12, 36), (34, 61), (42, 43), (31, 54), (20, 62), (30, 94), (44, 91), (56, 70), (75, 76), (46, 88), (48, 49), (0, 35), (1, 37), (52, 112), (29, 55), (58, 114), (69, 95), (73, 83), (86, 87), (66, 92)], [(16, 104), (33, 109), (35, 94), (65, 87), (82, 93), (27, 76), (37, 89), (13, 45), (57, 86), (102, 103), (2, 14), (3, 58), (6, 100), (15, 39), (47, 60), (64, 106), (10, 72), (52, 74), (5, 81), (7, 40), (84, 98), (24, 28), (75, 107), (32, 49), (43, 85), (8, 68), (20, 21), (22, 51), (77, 111), (50, 78), (12, 18), (17, 96), (34, 54), (38, 71), (67, 110), (61, 99), (62, 70), (19, 79), (29, 80), (30, 44), (46, 83), (59, 66), (53, 114), (63, 112), (0, 23), (1, 105), (4, 41), (9, 108), (69, 91), (73, 88), (48, 92), (95, 113)], [(23, 78), (33, 103), (35, 101), (40, 41), (20, 65), (5, 90), (104, 114), (25, 105), (27, 70), (37, 80), (89, 109), (2, 3), (6, 47), (13, 106), (12, 14), (15, 100), (10, 60), (64, 111), (72, 81), (74, 102), (11, 24), (26, 38), (77, 108), (86, 97), (7, 68), (21, 32), (8, 51), (30, 82), (18, 34), (19, 36), (46, 110), (31, 99), (67, 83), (62, 87), (29, 42), (61, 92), (44, 66), (79, 94), (48, 75), (53, 88), (59, 63), (91, 112), (0, 16), (1, 57), (4, 69), (9, 93), (54, 55), (17, 58), (49, 73), (76, 96)], [(16, 41), (23, 104), (33, 37), (35, 55), (56, 65), (11, 90), (25, 45), (26, 27), (57, 112), (51, 101), (70, 103), (80, 105), (2, 60), (3, 81), (6, 106), (12, 13), (15, 92), (47, 100), (72, 74), (5, 97), (40, 52), (49, 84), (102, 107), (108, 111), (77, 98), (7, 73), (39, 82), (38, 85), (8, 22), (21, 46), (24, 69), (17, 87), (18, 31), (34, 42), (36, 43), (53, 110), (54, 61), (71, 99), (67, 88), (20, 113), (62, 95), (19, 30), (29, 79), (44, 75), (66, 76), (48, 86), (83, 114), (0, 4), (1, 89), (9, 64), (58, 63), (68, 78)], [(16, 38), (23, 93), (29, 35), (24, 90), (25, 103), (27, 63), (37, 45), (57, 92), (55, 89), (58, 101), (30, 109), (2, 106), (3, 11), (6, 39), (13, 100), (14, 71), (15, 32), (47, 64), (72, 102), (5, 10), (26, 61), (40, 81), (52, 84), (28, 69), (7, 108), (97, 112), (48, 98), (88, 107), (31, 85), (8, 78), (21, 51), (22, 77), (82, 94), (68, 111), (12, 34), (17, 62), (18, 19), (36, 59), (43, 70), (49, 110), (67, 114), (20, 75), (79, 80), (76, 113), (53, 83), (86, 91), (0, 9), (1, 33), (4, 104), (46, 73), (56, 95)], [(23, 41), (25, 33), (63, 65), (11, 104), (27, 56), (37, 109), (45, 62), (89, 99), (103, 105), (2, 47), (3, 26), (6, 55), (13, 39), (14, 85), (15, 106), (59, 60), (32, 64), (72, 107), (40, 74), (82, 100), (5, 84), (81, 83), (10, 102), (28, 50), (21, 108), (52, 98), (7, 77), (8, 111), (22, 78), (24, 66), (12, 17), (18, 38), (34, 94), (31, 43), (61, 71), (20, 76), (19, 29), (30, 79), (44, 112), (46, 114), (49, 53), (80, 91), (0, 90), (1, 101), (4, 93), (67, 68), (69, 88), (73, 110), (87, 113), (86, 92), (48, 96)], [(9, 16), (19, 35), (41, 104), (17, 65), (91, 93), (25, 109), (27, 96), (37, 95), (44, 57), (89, 105), (29, 101), (2, 15), (3, 52), (6, 85), (13, 60), (14, 99), (39, 47), (63, 64), (74, 82), (32, 100), (11, 69), (26, 34), (40, 98), (81, 107), (10, 84), (28, 78), (51, 108), (59, 97), (7, 8), (21, 77), (22, 68), (46, 111), (24, 50), (18, 42), (38, 54), (43, 61), (83, 110), (31, 71), (20, 87), (56, 62), (70, 113), (75, 86), (66, 112), (48, 53), (49, 114), (0, 33), (1, 45), (4, 5), (55, 79), (58, 88), (67, 73), (80, 94)], [(4, 16), (22, 23), (35, 79), (65, 66), (28, 90), (80, 93), (87, 104), (24, 25), (27, 95), (37, 105), (45, 103), (57, 91), (94, 101), (2, 6), (3, 5), (13, 110), (14, 26), (15, 68), (60, 64), (71, 72), (73, 74), (99, 100), (32, 106), (11, 97), (40, 107), (81, 98), (83, 84), (52, 102), (7, 78), (38, 39), (21, 111), (51, 77), (50, 69), (12, 43), (18, 54), (31, 34), (46, 67), (20, 70), (42, 63), (29, 30), (44, 48), (56, 76), (53, 86), (49, 88), (0, 41), (1, 109), (8, 9), (19, 55), (36, 58), (75, 92), (96, 113)], [(16, 81), (23, 111), (19, 33), (30, 35), (41, 93), (27, 65), (8, 90), (25, 89), (37, 103), (44, 45), (42, 57), (55, 101), (62, 105), (79, 109), (2, 74), (3, 84), (6, 58), (13, 15), (14, 38), (32, 47), (60, 71), (64, 100), (40, 72), (56, 106), (5, 11), (26, 43), (98, 102), (10, 107), (7, 22), (39, 54), (12, 85), (21, 68), (80, 82), (50, 51), (17, 20), (18, 99), (110, 114), (53, 67), (31, 61), (29, 94), (66, 86), (48, 91), (83, 88), (0, 1), (4, 28), (9, 104), (69, 70), (73, 77), (87, 96), (92, 112), (76, 95)], [(16, 67), (23, 90), (35, 44), (93, 104), (45, 109), (57, 75), (89, 103), (2, 100), (3, 72), (6, 64), (13, 32), (14, 15), (46, 47), (39, 60), (10, 74), (92, 106), (5, 98), (26, 85), (40, 102), (81, 84), (58, 97), (7, 111), (8, 21), (77, 82), (51, 78), (24, 87), (30, 50), (12, 38), (17, 113), (18, 36), (34, 99), (43, 79), (80, 110), (54, 71), (61, 62), (19, 94), (29, 91), (70, 95), (59, 76), (48, 66), (49, 83), (88, 114), (0, 65), (1, 25), (4, 108), (9, 22), (52, 53), (31, 55), (56, 96)]]\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(create_schedule_from_edge_file('football.edge'))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\n",
+      "Week 1\n",
+      "Team 16 vs. Team 17; Team 9 vs. Team 23; Team 33 vs. Team 105; Team 34 vs. Team 35; Team 41 vs. Team 67; Team 65 vs. Team 113; Team 50 vs. Team 90; Team 25 vs. Team 37; Team 27 vs. Team 62; Team 45 vs. Team 89; Team 56 vs. Team 57; Team 19 vs. Team 101; Team 63 vs. Team 109; Team 2 vs. Team 13; Team 3 vs. Team 74; Team 6 vs. Team 60; Team 14 vs. Team 54; Team 15 vs. Team 114; Team 47 vs. Team 61; Team 52 vs. Team 72; Team 100 vs. Team 102; Team 39 vs. Team 106; Team 5 vs. Team 107; Team 11 vs. Team 28; Team 26 vs. Team 42; Team 81 vs. Team 82; Team 24 vs. Team 84; Team 22 vs. Team 108; Team 10 vs. Team 98; Team 7 vs. Team 21; Team 31 vs. Team 32; Team 80 vs. Team 85; Team 8 vs. Team 77; Team 78 vs. Team 111; Team 51 vs. Team 68; Team 18 vs. Team 71; Team 20 vs. Team 36; Team 38 vs. Team 43; Team 88 vs. Team 110; Team 44 vs. Team 86; Team 70 vs. Team 76; Team 66 vs. Team 75; Team 46 vs. Team 49; Team 0 vs. Team 104; Team 1 vs. Team 103; Team 30 vs. Team 55; Team 58 vs. Team 59; Team 69 vs. Team 83; Team 53 vs. Team 73; Team 87 vs. Team 95; Team 91 vs. Team 92; Team 96 vs. Team 112; \n",
+      "Week 2\n",
+      "Team 16 vs. Team 23; Team 33 vs. Team 45; Team 35 vs. Team 92; Team 8 vs. Team 41; Team 65 vs. Team 70; Team 69 vs. Team 90; Team 72 vs. Team 104; Team 25 vs. Team 106; Team 36 vs. Team 37; Team 48 vs. Team 57; Team 88 vs. Team 89; Team 30 vs. Team 101; Team 105 vs. Team 109; Team 2 vs. Team 64; Team 3 vs. Team 40; Team 6 vs. Team 7; Team 14 vs. Team 43; Team 15 vs. Team 60; Team 22 vs. Team 47; Team 74 vs. Team 84; Team 5 vs. Team 52; Team 11 vs. Team 50; Team 12 vs. Team 26; Team 10 vs. Team 81; Team 28 vs. Team 38; Team 68 vs. Team 108; Team 63 vs. Team 97; Team 98 vs. Team 107; Team 32 vs. Team 39; Team 29 vs. Team 82; Team 51 vs. Team 111; Team 24 vs. Team 110; Team 17 vs. Team 95; Team 18 vs. Team 61; Team 34 vs. Team 71; Team 54 vs. Team 99; Team 49 vs. Team 67; Team 20 vs. Team 96; Team 62 vs. Team 76; Team 19 vs. Team 44; Team 31 vs. Team 79; Team 75 vs. Team 112; Team 46 vs. Team 53; Team 66 vs. Team 91; Team 80 vs. Team 86; Team 59 vs. Team 113; Team 0 vs. Team 93; Team 1 vs. Team 27; Team 4 vs. Team 9; Team 55 vs. Team 94; Team 73 vs. Team 114; Team 77 vs. Team 78; Team 56 vs. Team 87; \n",
+      "Week 3\n",
+      "Team 16 vs. Team 93; Team 4 vs. Team 23; Team 33 vs. Team 89; Team 9 vs. Team 41; Team 65 vs. Team 96; Team 67 vs. Team 104; Team 25 vs. Team 53; Team 17 vs. Team 27; Team 45 vs. Team 105; Team 79 vs. Team 101; Team 103 vs. Team 109; Team 2 vs. Team 72; Team 3 vs. Team 102; Team 6 vs. Team 32; Team 13 vs. Team 64; Team 15 vs. Team 47; Team 60 vs. Team 106; Team 5 vs. Team 74; Team 39 vs. Team 100; Team 10 vs. Team 11; Team 40 vs. Team 51; Team 84 vs. Team 107; Team 28 vs. Team 113; Team 78 vs. Team 108; Team 97 vs. Team 98; Team 7 vs. Team 82; Team 85 vs. Team 99; Team 21 vs. Team 22; Team 50 vs. Team 68; Team 12 vs. Team 36; Team 34 vs. Team 61; Team 42 vs. Team 43; Team 31 vs. Team 54; Team 20 vs. Team 62; Team 30 vs. Team 94; Team 44 vs. Team 91; Team 56 vs. Team 70; Team 75 vs. Team 76; Team 46 vs. Team 88; Team 48 vs. Team 49; Team 0 vs. Team 35; Team 1 vs. Team 37; Team 52 vs. Team 112; Team 29 vs. Team 55; Team 58 vs. Team 114; Team 69 vs. Team 95; Team 73 vs. Team 83; Team 86 vs. Team 87; Team 66 vs. Team 92; \n",
+      "Week 4\n",
+      "Team 16 vs. Team 104; Team 33 vs. Team 109; Team 35 vs. Team 94; Team 65 vs. Team 87; Team 82 vs. Team 93; Team 27 vs. Team 76; Team 37 vs. Team 89; Team 13 vs. Team 45; Team 57 vs. Team 86; Team 102 vs. Team 103; Team 2 vs. Team 14; Team 3 vs. Team 58; Team 6 vs. Team 100; Team 15 vs. Team 39; Team 47 vs. Team 60; Team 64 vs. Team 106; Team 10 vs. Team 72; Team 52 vs. Team 74; Team 5 vs. Team 81; Team 7 vs. Team 40; Team 84 vs. Team 98; Team 24 vs. Team 28; Team 75 vs. Team 107; Team 32 vs. Team 49; Team 43 vs. Team 85; Team 8 vs. Team 68; Team 20 vs. Team 21; Team 22 vs. Team 51; Team 77 vs. Team 111; Team 50 vs. Team 78; Team 12 vs. Team 18; Team 17 vs. Team 96; Team 34 vs. Team 54; Team 38 vs. Team 71; Team 67 vs. Team 110; Team 61 vs. Team 99; Team 62 vs. Team 70; Team 19 vs. Team 79; Team 29 vs. Team 80; Team 30 vs. Team 44; Team 46 vs. Team 83; Team 59 vs. Team 66; Team 53 vs. Team 114; Team 63 vs. Team 112; Team 0 vs. Team 23; Team 1 vs. Team 105; Team 4 vs. Team 41; Team 9 vs. Team 108; Team 69 vs. Team 91; Team 73 vs. Team 88; Team 48 vs. Team 92; Team 95 vs. Team 113; \n",
+      "Week 5\n",
+      "Team 23 vs. Team 78; Team 33 vs. Team 103; Team 35 vs. Team 101; Team 40 vs. Team 41; Team 20 vs. Team 65; Team 5 vs. Team 90; Team 104 vs. Team 114; Team 25 vs. Team 105; Team 27 vs. Team 70; Team 37 vs. Team 80; Team 89 vs. Team 109; Team 2 vs. Team 3; Team 6 vs. Team 47; Team 13 vs. Team 106; Team 12 vs. Team 14; Team 15 vs. Team 100; Team 10 vs. Team 60; Team 64 vs. Team 111; Team 72 vs. Team 81; Team 74 vs. Team 102; Team 11 vs. Team 24; Team 26 vs. Team 38; Team 77 vs. Team 108; Team 86 vs. Team 97; Team 7 vs. Team 68; Team 21 vs. Team 32; Team 8 vs. Team 51; Team 30 vs. Team 82; Team 18 vs. Team 34; Team 19 vs. Team 36; Team 46 vs. Team 110; Team 31 vs. Team 99; Team 67 vs. Team 83; Team 62 vs. Team 87; Team 29 vs. Team 42; Team 61 vs. Team 92; Team 44 vs. Team 66; Team 79 vs. Team 94; Team 48 vs. Team 75; Team 53 vs. Team 88; Team 59 vs. Team 63; Team 91 vs. Team 112; Team 0 vs. Team 16; Team 1 vs. Team 57; Team 4 vs. Team 69; Team 9 vs. Team 93; Team 54 vs. Team 55; Team 17 vs. Team 58; Team 49 vs. Team 73; Team 76 vs. Team 96; \n",
+      "Week 6\n",
+      "Team 16 vs. Team 41; Team 23 vs. Team 104; Team 33 vs. Team 37; Team 35 vs. Team 55; Team 56 vs. Team 65; Team 11 vs. Team 90; Team 25 vs. Team 45; Team 26 vs. Team 27; Team 57 vs. Team 112; Team 51 vs. Team 101; Team 70 vs. Team 103; Team 80 vs. Team 105; Team 2 vs. Team 60; Team 3 vs. Team 81; Team 6 vs. Team 106; Team 12 vs. Team 13; Team 15 vs. Team 92; Team 47 vs. Team 100; Team 72 vs. Team 74; Team 5 vs. Team 97; Team 40 vs. Team 52; Team 49 vs. Team 84; Team 102 vs. Team 107; Team 108 vs. Team 111; Team 77 vs. Team 98; Team 7 vs. Team 73; Team 39 vs. Team 82; Team 38 vs. Team 85; Team 8 vs. Team 22; Team 21 vs. Team 46; Team 24 vs. Team 69; Team 17 vs. Team 87; Team 18 vs. Team 31; Team 34 vs. Team 42; Team 36 vs. Team 43; Team 53 vs. Team 110; Team 54 vs. Team 61; Team 71 vs. Team 99; Team 67 vs. Team 88; Team 20 vs. Team 113; Team 62 vs. Team 95; Team 19 vs. Team 30; Team 29 vs. Team 79; Team 44 vs. Team 75; Team 66 vs. Team 76; Team 48 vs. Team 86; Team 83 vs. Team 114; Team 0 vs. Team 4; Team 1 vs. Team 89; Team 9 vs. Team 64; Team 58 vs. Team 63; Team 68 vs. Team 78; \n",
+      "Week 7\n",
+      "Team 16 vs. Team 38; Team 23 vs. Team 93; Team 29 vs. Team 35; Team 24 vs. Team 90; Team 25 vs. Team 103; Team 27 vs. Team 63; Team 37 vs. Team 45; Team 57 vs. Team 92; Team 55 vs. Team 89; Team 58 vs. Team 101; Team 30 vs. Team 109; Team 2 vs. Team 106; Team 3 vs. Team 11; Team 6 vs. Team 39; Team 13 vs. Team 100; Team 14 vs. Team 71; Team 15 vs. Team 32; Team 47 vs. Team 64; Team 72 vs. Team 102; Team 5 vs. Team 10; Team 26 vs. Team 61; Team 40 vs. Team 81; Team 52 vs. Team 84; Team 28 vs. Team 69; Team 7 vs. Team 108; Team 97 vs. Team 112; Team 48 vs. Team 98; Team 88 vs. Team 107; Team 31 vs. Team 85; Team 8 vs. Team 78; Team 21 vs. Team 51; Team 22 vs. Team 77; Team 82 vs. Team 94; Team 68 vs. Team 111; Team 12 vs. Team 34; Team 17 vs. Team 62; Team 18 vs. Team 19; Team 36 vs. Team 59; Team 43 vs. Team 70; Team 49 vs. Team 110; Team 67 vs. Team 114; Team 20 vs. Team 75; Team 79 vs. Team 80; Team 76 vs. Team 113; Team 53 vs. Team 83; Team 86 vs. Team 91; Team 0 vs. Team 9; Team 1 vs. Team 33; Team 4 vs. Team 104; Team 46 vs. Team 73; Team 56 vs. Team 95; \n",
+      "Week 8\n",
+      "Team 23 vs. Team 41; Team 25 vs. Team 33; Team 63 vs. Team 65; Team 11 vs. Team 104; Team 27 vs. Team 56; Team 37 vs. Team 109; Team 45 vs. Team 62; Team 89 vs. Team 99; Team 103 vs. Team 105; Team 2 vs. Team 47; Team 3 vs. Team 26; Team 6 vs. Team 55; Team 13 vs. Team 39; Team 14 vs. Team 85; Team 15 vs. Team 106; Team 59 vs. Team 60; Team 32 vs. Team 64; Team 72 vs. Team 107; Team 40 vs. Team 74; Team 82 vs. Team 100; Team 5 vs. Team 84; Team 81 vs. Team 83; Team 10 vs. Team 102; Team 28 vs. Team 50; Team 21 vs. Team 108; Team 52 vs. Team 98; Team 7 vs. Team 77; Team 8 vs. Team 111; Team 22 vs. Team 78; Team 24 vs. Team 66; Team 12 vs. Team 17; Team 18 vs. Team 38; Team 34 vs. Team 94; Team 31 vs. Team 43; Team 61 vs. Team 71; Team 20 vs. Team 76; Team 19 vs. Team 29; Team 30 vs. Team 79; Team 44 vs. Team 112; Team 46 vs. Team 114; Team 49 vs. Team 53; Team 80 vs. Team 91; Team 0 vs. Team 90; Team 1 vs. Team 101; Team 4 vs. Team 93; Team 67 vs. Team 68; Team 69 vs. Team 88; Team 73 vs. Team 110; Team 87 vs. Team 113; Team 86 vs. Team 92; Team 48 vs. Team 96; \n",
+      "Week 9\n",
+      "Team 9 vs. Team 16; Team 19 vs. Team 35; Team 41 vs. Team 104; Team 17 vs. Team 65; Team 91 vs. Team 93; Team 25 vs. Team 109; Team 27 vs. Team 96; Team 37 vs. Team 95; Team 44 vs. Team 57; Team 89 vs. Team 105; Team 29 vs. Team 101; Team 2 vs. Team 15; Team 3 vs. Team 52; Team 6 vs. Team 85; Team 13 vs. Team 60; Team 14 vs. Team 99; Team 39 vs. Team 47; Team 63 vs. Team 64; Team 74 vs. Team 82; Team 32 vs. Team 100; Team 11 vs. Team 69; Team 26 vs. Team 34; Team 40 vs. Team 98; Team 81 vs. Team 107; Team 10 vs. Team 84; Team 28 vs. Team 78; Team 51 vs. Team 108; Team 59 vs. Team 97; Team 7 vs. Team 8; Team 21 vs. Team 77; Team 22 vs. Team 68; Team 46 vs. Team 111; Team 24 vs. Team 50; Team 18 vs. Team 42; Team 38 vs. Team 54; Team 43 vs. Team 61; Team 83 vs. Team 110; Team 31 vs. Team 71; Team 20 vs. Team 87; Team 56 vs. Team 62; Team 70 vs. Team 113; Team 75 vs. Team 86; Team 66 vs. Team 112; Team 48 vs. Team 53; Team 49 vs. Team 114; Team 0 vs. Team 33; Team 1 vs. Team 45; Team 4 vs. Team 5; Team 55 vs. Team 79; Team 58 vs. Team 88; Team 67 vs. Team 73; Team 80 vs. Team 94; \n",
+      "Week 10\n",
+      "Team 4 vs. Team 16; Team 22 vs. Team 23; Team 35 vs. Team 79; Team 65 vs. Team 66; Team 28 vs. Team 90; Team 80 vs. Team 93; Team 87 vs. Team 104; Team 24 vs. Team 25; Team 27 vs. Team 95; Team 37 vs. Team 105; Team 45 vs. Team 103; Team 57 vs. Team 91; Team 94 vs. Team 101; Team 2 vs. Team 6; Team 3 vs. Team 5; Team 13 vs. Team 110; Team 14 vs. Team 26; Team 15 vs. Team 68; Team 60 vs. Team 64; Team 71 vs. Team 72; Team 73 vs. Team 74; Team 99 vs. Team 100; Team 32 vs. Team 106; Team 11 vs. Team 97; Team 40 vs. Team 107; Team 81 vs. Team 98; Team 83 vs. Team 84; Team 52 vs. Team 102; Team 7 vs. Team 78; Team 38 vs. Team 39; Team 21 vs. Team 111; Team 51 vs. Team 77; Team 50 vs. Team 69; Team 12 vs. Team 43; Team 18 vs. Team 54; Team 31 vs. Team 34; Team 46 vs. Team 67; Team 20 vs. Team 70; Team 42 vs. Team 63; Team 29 vs. Team 30; Team 44 vs. Team 48; Team 56 vs. Team 76; Team 53 vs. Team 86; Team 49 vs. Team 88; Team 0 vs. Team 41; Team 1 vs. Team 109; Team 8 vs. Team 9; Team 19 vs. Team 55; Team 36 vs. Team 58; Team 75 vs. Team 92; Team 96 vs. Team 113; \n",
+      "Week 11\n",
+      "Team 16 vs. Team 81; Team 23 vs. Team 111; Team 19 vs. Team 33; Team 30 vs. Team 35; Team 41 vs. Team 93; Team 27 vs. Team 65; Team 8 vs. Team 90; Team 25 vs. Team 89; Team 37 vs. Team 103; Team 44 vs. Team 45; Team 42 vs. Team 57; Team 55 vs. Team 101; Team 62 vs. Team 105; Team 79 vs. Team 109; Team 2 vs. Team 74; Team 3 vs. Team 84; Team 6 vs. Team 58; Team 13 vs. Team 15; Team 14 vs. Team 38; Team 32 vs. Team 47; Team 60 vs. Team 71; Team 64 vs. Team 100; Team 40 vs. Team 72; Team 56 vs. Team 106; Team 5 vs. Team 11; Team 26 vs. Team 43; Team 98 vs. Team 102; Team 10 vs. Team 107; Team 7 vs. Team 22; Team 39 vs. Team 54; Team 12 vs. Team 85; Team 21 vs. Team 68; Team 80 vs. Team 82; Team 50 vs. Team 51; Team 17 vs. Team 20; Team 18 vs. Team 99; Team 110 vs. Team 114; Team 53 vs. Team 67; Team 31 vs. Team 61; Team 29 vs. Team 94; Team 66 vs. Team 86; Team 48 vs. Team 91; Team 83 vs. Team 88; Team 0 vs. Team 1; Team 4 vs. Team 28; Team 9 vs. Team 104; Team 69 vs. Team 70; Team 73 vs. Team 77; Team 87 vs. Team 96; Team 92 vs. Team 112; Team 76 vs. Team 95; \n",
+      "Week 12\n",
+      "Team 16 vs. Team 67; Team 23 vs. Team 90; Team 35 vs. Team 44; Team 93 vs. Team 104; Team 45 vs. Team 109; Team 57 vs. Team 75; Team 89 vs. Team 103; Team 2 vs. Team 100; Team 3 vs. Team 72; Team 6 vs. Team 64; Team 13 vs. Team 32; Team 14 vs. Team 15; Team 46 vs. Team 47; Team 39 vs. Team 60; Team 10 vs. Team 74; Team 92 vs. Team 106; Team 5 vs. Team 98; Team 26 vs. Team 85; Team 40 vs. Team 102; Team 81 vs. Team 84; Team 58 vs. Team 97; Team 7 vs. Team 111; Team 8 vs. Team 21; Team 77 vs. Team 82; Team 51 vs. Team 78; Team 24 vs. Team 87; Team 30 vs. Team 50; Team 12 vs. Team 38; Team 17 vs. Team 113; Team 18 vs. Team 36; Team 34 vs. Team 99; Team 43 vs. Team 79; Team 80 vs. Team 110; Team 54 vs. Team 71; Team 61 vs. Team 62; Team 19 vs. Team 94; Team 29 vs. Team 91; Team 70 vs. Team 95; Team 59 vs. Team 76; Team 48 vs. Team 66; Team 49 vs. Team 83; Team 88 vs. Team 114; Team 0 vs. Team 65; Team 1 vs. Team 25; Team 4 vs. Team 108; Team 9 vs. Team 22; Team 52 vs. Team 53; Team 31 vs. Team 55; Team 56 vs. Team 96; [[(16, 17), (9, 23), (33, 105), (34, 35), (41, 67), (65, 113), (50, 90), (25, 37), (27, 62), (45, 89), (56, 57), (19, 101), (63, 109), (2, 13), (3, 74), (6, 60), (14, 54), (15, 114), (47, 61), (52, 72), (100, 102), (39, 106), (5, 107), (11, 28), (26, 42), (81, 82), (24, 84), (22, 108), (10, 98), (7, 21), (31, 32), (80, 85), (8, 77), (78, 111), (51, 68), (18, 71), (20, 36), (38, 43), (88, 110), (44, 86), (70, 76), (66, 75), (46, 49), (0, 104), (1, 103), (30, 55), (58, 59), (69, 83), (53, 73), (87, 95), (91, 92), (96, 112)], [(16, 23), (33, 45), (35, 92), (8, 41), (65, 70), (69, 90), (72, 104), (25, 106), (36, 37), (48, 57), (88, 89), (30, 101), (105, 109), (2, 64), (3, 40), (6, 7), (14, 43), (15, 60), (22, 47), (74, 84), (5, 52), (11, 50), (12, 26), (10, 81), (28, 38), (68, 108), (63, 97), (98, 107), (32, 39), (29, 82), (51, 111), (24, 110), (17, 95), (18, 61), (34, 71), (54, 99), (49, 67), (20, 96), (62, 76), (19, 44), (31, 79), (75, 112), (46, 53), (66, 91), (80, 86), (59, 113), (0, 93), (1, 27), (4, 9), (55, 94), (73, 114), (77, 78), (56, 87)], [(16, 93), (4, 23), (33, 89), (9, 41), (65, 96), (67, 104), (25, 53), (17, 27), (45, 105), (79, 101), (103, 109), (2, 72), (3, 102), (6, 32), (13, 64), (15, 47), (60, 106), (5, 74), (39, 100), (10, 11), (40, 51), (84, 107), (28, 113), (78, 108), (97, 98), (7, 82), (85, 99), (21, 22), (50, 68), (12, 36), (34, 61), (42, 43), (31, 54), (20, 62), (30, 94), (44, 91), (56, 70), (75, 76), (46, 88), (48, 49), (0, 35), (1, 37), (52, 112), (29, 55), (58, 114), (69, 95), (73, 83), (86, 87), (66, 92)], [(16, 104), (33, 109), (35, 94), (65, 87), (82, 93), (27, 76), (37, 89), (13, 45), (57, 86), (102, 103), (2, 14), (3, 58), (6, 100), (15, 39), (47, 60), (64, 106), (10, 72), (52, 74), (5, 81), (7, 40), (84, 98), (24, 28), (75, 107), (32, 49), (43, 85), (8, 68), (20, 21), (22, 51), (77, 111), (50, 78), (12, 18), (17, 96), (34, 54), (38, 71), (67, 110), (61, 99), (62, 70), (19, 79), (29, 80), (30, 44), (46, 83), (59, 66), (53, 114), (63, 112), (0, 23), (1, 105), (4, 41), (9, 108), (69, 91), (73, 88), (48, 92), (95, 113)], [(23, 78), (33, 103), (35, 101), (40, 41), (20, 65), (5, 90), (104, 114), (25, 105), (27, 70), (37, 80), (89, 109), (2, 3), (6, 47), (13, 106), (12, 14), (15, 100), (10, 60), (64, 111), (72, 81), (74, 102), (11, 24), (26, 38), (77, 108), (86, 97), (7, 68), (21, 32), (8, 51), (30, 82), (18, 34), (19, 36), (46, 110), (31, 99), (67, 83), (62, 87), (29, 42), (61, 92), (44, 66), (79, 94), (48, 75), (53, 88), (59, 63), (91, 112), (0, 16), (1, 57), (4, 69), (9, 93), (54, 55), (17, 58), (49, 73), (76, 96)], [(16, 41), (23, 104), (33, 37), (35, 55), (56, 65), (11, 90), (25, 45), (26, 27), (57, 112), (51, 101), (70, 103), (80, 105), (2, 60), (3, 81), (6, 106), (12, 13), (15, 92), (47, 100), (72, 74), (5, 97), (40, 52), (49, 84), (102, 107), (108, 111), (77, 98), (7, 73), (39, 82), (38, 85), (8, 22), (21, 46), (24, 69), (17, 87), (18, 31), (34, 42), (36, 43), (53, 110), (54, 61), (71, 99), (67, 88), (20, 113), (62, 95), (19, 30), (29, 79), (44, 75), (66, 76), (48, 86), (83, 114), (0, 4), (1, 89), (9, 64), (58, 63), (68, 78)], [(16, 38), (23, 93), (29, 35), (24, 90), (25, 103), (27, 63), (37, 45), (57, 92), (55, 89), (58, 101), (30, 109), (2, 106), (3, 11), (6, 39), (13, 100), (14, 71), (15, 32), (47, 64), (72, 102), (5, 10), (26, 61), (40, 81), (52, 84), (28, 69), (7, 108), (97, 112), (48, 98), (88, 107), (31, 85), (8, 78), (21, 51), (22, 77), (82, 94), (68, 111), (12, 34), (17, 62), (18, 19), (36, 59), (43, 70), (49, 110), (67, 114), (20, 75), (79, 80), (76, 113), (53, 83), (86, 91), (0, 9), (1, 33), (4, 104), (46, 73), (56, 95)], [(23, 41), (25, 33), (63, 65), (11, 104), (27, 56), (37, 109), (45, 62), (89, 99), (103, 105), (2, 47), (3, 26), (6, 55), (13, 39), (14, 85), (15, 106), (59, 60), (32, 64), (72, 107), (40, 74), (82, 100), (5, 84), (81, 83), (10, 102), (28, 50), (21, 108), (52, 98), (7, 77), (8, 111), (22, 78), (24, 66), (12, 17), (18, 38), (34, 94), (31, 43), (61, 71), (20, 76), (19, 29), (30, 79), (44, 112), (46, 114), (49, 53), (80, 91), (0, 90), (1, 101), (4, 93), (67, 68), (69, 88), (73, 110), (87, 113), (86, 92), (48, 96)], [(9, 16), (19, 35), (41, 104), (17, 65), (91, 93), (25, 109), (27, 96), (37, 95), (44, 57), (89, 105), (29, 101), (2, 15), (3, 52), (6, 85), (13, 60), (14, 99), (39, 47), (63, 64), (74, 82), (32, 100), (11, 69), (26, 34), (40, 98), (81, 107), (10, 84), (28, 78), (51, 108), (59, 97), (7, 8), (21, 77), (22, 68), (46, 111), (24, 50), (18, 42), (38, 54), (43, 61), (83, 110), (31, 71), (20, 87), (56, 62), (70, 113), (75, 86), (66, 112), (48, 53), (49, 114), (0, 33), (1, 45), (4, 5), (55, 79), (58, 88), (67, 73), (80, 94)], [(4, 16), (22, 23), (35, 79), (65, 66), (28, 90), (80, 93), (87, 104), (24, 25), (27, 95), (37, 105), (45, 103), (57, 91), (94, 101), (2, 6), (3, 5), (13, 110), (14, 26), (15, 68), (60, 64), (71, 72), (73, 74), (99, 100), (32, 106), (11, 97), (40, 107), (81, 98), (83, 84), (52, 102), (7, 78), (38, 39), (21, 111), (51, 77), (50, 69), (12, 43), (18, 54), (31, 34), (46, 67), (20, 70), (42, 63), (29, 30), (44, 48), (56, 76), (53, 86), (49, 88), (0, 41), (1, 109), (8, 9), (19, 55), (36, 58), (75, 92), (96, 113)], [(16, 81), (23, 111), (19, 33), (30, 35), (41, 93), (27, 65), (8, 90), (25, 89), (37, 103), (44, 45), (42, 57), (55, 101), (62, 105), (79, 109), (2, 74), (3, 84), (6, 58), (13, 15), (14, 38), (32, 47), (60, 71), (64, 100), (40, 72), (56, 106), (5, 11), (26, 43), (98, 102), (10, 107), (7, 22), (39, 54), (12, 85), (21, 68), (80, 82), (50, 51), (17, 20), (18, 99), (110, 114), (53, 67), (31, 61), (29, 94), (66, 86), (48, 91), (83, 88), (0, 1), (4, 28), (9, 104), (69, 70), (73, 77), (87, 96), (92, 112), (76, 95)], [(16, 67), (23, 90), (35, 44), (93, 104), (45, 109), (57, 75), (89, 103), (2, 100), (3, 72), (6, 64), (13, 32), (14, 15), (46, 47), (39, 60), (10, 74), (92, 106), (5, 98), (26, 85), (40, 102), (81, 84), (58, 97), (7, 111), (8, 21), (77, 82), (51, 78), (24, 87), (30, 50), (12, 38), (17, 113), (18, 36), (34, 99), (43, 79), (80, 110), (54, 71), (61, 62), (19, 94), (29, 91), (70, 95), (59, 76), (48, 66), (49, 83), (88, 114), (0, 65), (1, 25), (4, 108), (9, 22), (52, 53), (31, 55), (56, 96)]]\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(create_schedule_from_edge_file('football.edge', print_schedule=True, create_csv=True))"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "argv": [
+    "sage-9.8",
+    "--python",
+    "-m",
+    "sage.repl.ipython_kernel",
+    "--matplotlib=inline",
+    "-f",
+    "{connection_file}"
+   ],
+   "display_name": "SageMath 9.8",
+   "env": {
+   },
+   "language": "sagemath",
+   "metadata": {
+    "cocalc": {
+     "description": "Open-source mathematical software system",
+     "priority": 10,
+     "url": "https://www.sagemath.org/"
+    }
+   },
+   "name": "sage-9.8",
+   "resource_dir": "/ext/jupyter/kernels/sage-9.8"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.11.1"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}
